@@ -1,0 +1,12 @@
+<select-component>
+       <select onchange={optionSelected}>
+            <option each="{option in this.props.options}" value={option.value}>{option.text}</option>
+        </select> 
+        <script>
+        export default {
+            optionSelected(e) {
+                this.props.optionSelected(e.target.value, this.props.id); 
+            }
+        }
+        </script> 
+</select-component> 

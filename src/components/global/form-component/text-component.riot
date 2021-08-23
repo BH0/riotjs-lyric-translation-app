@@ -1,0 +1,11 @@
+<text-component>
+    <input type="text" value={this.props.value} onkeyup={edit} /> 
+    <script>
+    export default {
+        edit(e) {
+            e.preventDefault(e); 
+            this.props.edit(e.target.value, this.props.prop); 
+        }
+    }
+    </script> 
+</text-component> 

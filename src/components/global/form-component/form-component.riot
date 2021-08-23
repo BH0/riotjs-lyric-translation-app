@@ -1,0 +1,66 @@
+<form-component>
+    <form onsubmit={formSubmitted}>
+        <text-component value={"disturbed"} prop={"artist"} edit={edit}></text-component> 
+        <text-component value={"stricken"} prop={"song"} edit={edit}></text-component> 
+        <label>Translate from</label> 
+        <select-component id="source-language-select" optionSelected={optionSelected} options={this.state.languages}></select-component>  
+        <label>to</label> 
+        <select-component id="target-language-select" optionSelected={optionSelected} options={this.state.languages}></select-component>  
+        <button>LESGO</button> 
+    </form> 
+    <script>
+        import observable from "@riotjs/observable"; 
+        import { sort, renameKeys } from "../../../utils.js"; 
+    
+        export default {
+            async onMounted() {
+                const languages = await fetch("https://libretranslate.de/languages"); 
+                const json = await languages.json(); 
+                const keysMap = { name: "text", code: "value" };
+                const renamed = json.map(obj => renameKeys(keysMap, obj)); 
+                this.state.languages = sort(this.state.languages.concat(renamed), "text"); 
+                this.update(); 
+            }, 
+            state: {
+                "artist": observable({value: "metallica"}),
+                song: observable({value: "one"}), 
+                sourceLanguage: observable({value: "en"}), 
+                targetLanguage: observable({value: "es"}), 
+                languages: [], 
+                lyrics: observable({value: { normal: "", translated: "" }}) 
+            }, 
+            edit(value, prop) {
+                this.state[prop].value = value; 
+                this.update(); 
+            }, 
+            optionSelected(value, id) {
+                switch(id) {
+                    case "source-language-select": 
+                        this.state.sourceLanguage.value = value; 
+                        break; 
+                    case "target-language-select": 
+                        this.state.targetLanguage.value = value; 
+                        break; 
+                }
+                this.update(); 
+            }, 
+            async formSubmitted(e) { 
+                e.preventDefault(); 
+                const getLyrics = await fetch(`https://xshss.sse.codesandbox.io/lyrics?artist=${this.state.artist.value}&song=${this.state.song.value}`);
+                const lyricsJSON = await getLyrics.json(); 
+                this.state.lyrics.value.normal = lyricsJSON.data; 
+                const {targetLanguage: { value: target }, sourceLanguage: { value: source }} = this.state;  
+                const res = await fetch("https://libretranslate.de/translate", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        q: this.state.lyrics.value.normal, source, target
+                    }), headers: { "Content-Type": "application/json" }
+                });
+                let translatedLyrics = await res.json();
+                this.state.lyrics.value.translated = translatedLyrics.translatedText;  
+                this.update(); 
+                this.state.lyrics.trigger("lyrics", this.state.lyrics.value);         
+            }
+        }
+    </script> 
+</form-component>

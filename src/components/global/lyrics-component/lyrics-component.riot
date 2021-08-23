@@ -1,0 +1,22 @@
+<lyrics-component>
+    <h2>NORMAL LYRICS</h2> 
+    <div>{this.state.lyrics.normal}</div> 
+    <h2>TRANSLATED LYRICS</h2> 
+    <div>{this.state.lyrics.translated}</div> 
+    <script>
+    import FormComponent from "../form-component/form-component.riot"; 
+    export default {
+        components: { FormComponent }, 
+        state: {
+            lyrics: {normal: "Something will happen... soon", translated: "Something will happen... soon"}
+        }, 
+        onMounted() {
+            FormComponent.exports.state.lyrics.on("lyrics", lyrics => {
+                this.state.lyrics.normal = lyrics.normal; 
+                this.state.lyrics.translated = lyrics.translated; 
+                this.update(); 
+            }); 
+        }
+    }
+    </script> 
+</lyrics-component> 
